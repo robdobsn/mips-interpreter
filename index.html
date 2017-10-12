@@ -423,5 +423,16 @@
             return registerSyntactic[registerNo]; // no syntactic sugar
         }
     </script>
+    <script>
+        if (typeof(Storage) !== "undefined") {
+            let previousSessionCode = localStorage.getItem("code");
+            if (previousSessionCode !== null) {
+                document.getElementById('code').value = previousSessionCode;
+            }
+            window.onbeforeunload = function() {
+                localStorage.setItem("code", document.getElementById('code').value);
+            };
+        }
+    </script>
     <script src="static/downloader.js"></script>
 </body>
