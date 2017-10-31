@@ -650,6 +650,7 @@ class Program {
             case "$29":
                 return 29;
             case "$fp":
+            case "$s8":
             case "$30":
                 return 30;
             case "$ra":
