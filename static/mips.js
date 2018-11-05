@@ -182,8 +182,8 @@ class Program {
     /** Verifies a memory range from loc1 -> loc2 */
     verifyMemory(loc1, loc2) {
         if (!this.memory.isValidAddress(loc1) || !this.memory.isValidAddress(loc2)) {
-            this.pushError("Invalid memory location [line " + this.line + "]: " + (loc1 >>> 0) +
-                    ((loc2 === undefined) ? "" : " to " + (loc2 >>> 0)));
+            this.pushError("Invalid memory location [line " + this.line + "]: 0x" + (loc1 >>> 0).toString(16) +
+                    ((loc2 === undefined) ? "" : " to 0x" + (loc2 >>> 0).toString(16)));
         }
     }
 
