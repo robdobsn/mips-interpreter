@@ -493,6 +493,8 @@ class Program {
     }
 
     lw(rt, offset, base) {
+        offset = this.normalizeImm(offset);
+        offset = this.immPad(offset);
         var loc = offset + this.registers[base];
         if (loc % 4 != 0 ) {
             this.pushError("Address Error: loading from non-aligned word [line " + this.line + "]: " + loc);
@@ -506,6 +508,8 @@ class Program {
     }
 
     lb(rt, offset, base) {
+        offset = this.normalizeImm(offset);
+        offset = this.immPad(offset);
         var loc = offset + this.registers[base];
         this.verifyMemory(loc);
         var byteValue = this.memory.getMem(loc);
@@ -516,12 +520,16 @@ class Program {
     }
 
     lbu(rt, offset, base) {
+        offset = this.normalizeImm(offset);
+        offset = this.immPad(offset);
         var loc = offset + this.registers[base];
         this.verifyMemory(loc);
         this.registers[rt] = this.memory.getMem(loc);
     }
 
     sw(rt, offset, base) {
+        offset = this.normalizeImm(offset);
+        offset = this.immPad(offset);
         var registerValue = this.registers[rt];
         var loc = offset + this.registers[base];
         if (loc % 4 != 0 ) {
@@ -535,9 +543,12 @@ class Program {
     }
 
     sb(rt, offset, base) {
+        offset = this.normalizeImm(offset);
+        offset = this.immPad(offset);
+        var registerValue = this.registers[rt];
         var loc = offset + this.registers[base];
         this.verifyMemory(loc);
-        this.memory.setMem(loc, this.registers[rt] & 0x000000ff);
+        this.memory.setMem(loc, registerValue & 0x000000ff);
     }
 
     /* Checks that the instruction has the correct number and type of arguments
