@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="static/mips.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container-fluid">
         <div class="page-header">
             <h1>MIPS Interpreter</h1>
         </div>
@@ -20,7 +20,7 @@
             <div id="errors"></div>
         </div>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-lg-2">
                 <p class="lead">Input your MIPS code here:</p>
                 <div class="form-group">
                     <textarea id="code" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
@@ -78,7 +78,7 @@
                 </ul>
                 <p>MIPS Reference: <a href="mips_vol2.pdf">mips_vol2.pdf</a></p>
             </div>
-            <div class="col-md-6">
+            <div class="col-lg-3">
                 <div id="register-table" class="table-responsive">
                     <table class="table table-hover table-condensed">
                         <thead>
@@ -127,6 +127,20 @@
                     </table>
                 </div>
             </div>
+            <div class="col-lg-7">
+                <div class="form-inline text-center">
+                    <!-- <div class="form-group">
+                        <label for="memory-address">Screen Address</label>
+                        <input type="text" id="screen-address" class="form-control" placeholder="0x00000000" value="0x00000000">
+                    </div> -->
+                    <!-- <button id="screen-go" class="btn btn-primary">Go</button> -->
+                </div>
+                <br>
+                <div id="screen-view" class="border border-primary" style="border: solid lightblue; padding: 5px;">
+                    <canvas id="screen" height="256" width="256">
+                    </canvas>
+                </div>
+            </div>
         </div>
         <hr>
         <div class="row">
@@ -167,6 +181,7 @@
             </div>
         </div>
     </div>
+    
     <script src="static/jquery.min.js"></script>
     <script src="static/sprintf.min.js"></script>
     <script src="static/jquery-linedtextarea.js"></script>
@@ -195,6 +210,14 @@
         var runner = undefined;
         var programTerminated = true;
         var cpuFrequency = 32;
+        let screenSetup = {
+            startAddr: 0,
+            sizeX: 256,
+            sizeY: 256, 
+            bpp: 1,
+            scaleX: 4,
+            scaleY: 4
+        };
 
         function setFrequency(freq) {
             cpuFrequency = freq;
@@ -215,10 +238,13 @@
             recentInsns = [];
             displayRegisters();
             displayMemory();
+            displayScreen();
             displayErrors();
             document.getElementById('step').parentElement.style.display = "";
             document.getElementById('run').parentElement.style.display = "";
             document.getElementById('stop').parentElement.style.display = "none";
+            document.getElementById('screen').width = screenSetup.sizeX*screenSetup.scaleX
+            document.getElementById('screen').height = screenSetup.sizeY*screenSetup.scaleY
         }
 
         document.getElementById('reset').addEventListener('click', function() {
@@ -290,6 +316,7 @@
             }
             displayRegisters();
             displayMemory();
+            displayScreen();
             displayErrors();
         }
 
@@ -380,6 +407,52 @@
             if (memoryHTML != document.getElementById('memory').innerHTML) {
                 document.getElementById('memory').innerHTML = memoryHTML;
             }
+        }
+
+        function displayScreen() {
+            var memory = globalP.getMemory();
+            const screen = document.getElementById('screen');
+            const ctx = screen.getContext('2d');
+            const pixelsPerByte = Math.floor(8 / screenSetup.bpp + 0.1);
+            const bytesPerLine = Math.floor(screenSetup.sizeX / pixelsPerByte + 0.1);
+            const startMask = Math.floor(Math.pow(2, screenSetup.bpp) - 0.99)
+            for (let y = 0; y < screenSetup.sizeY; y++) {
+                for (let x = 0; x < screenSetup.sizeX; x++) {
+                    const addr = Math.floor(y * bytesPerLine + x / pixelsPerByte + 0.1);
+                    const bitMask = startMask << (x % pixelsPerByte);
+                    if (memory.getMem(addr) & bitMask) {
+                        ctx.fillStyle = 'rgb(200, 0, 0)';
+                    } else {
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+                    }
+                    ctx.fillRect(x*screenSetup.scaleX, y*screenSetup.scaleY, screenSetup.scaleX, screenSetup.scaleY);
+                }
+            }
+
+            // var memoryHTML = "";
+            // var memAddress = parseInt(document.getElementById('memory-address').value) >>> 0;
+            // var addr = memAddress - (memAddress % 4); // keep memory locations as multiple of 4
+            // if (!memory.isValidAddress(addr)) {
+            //     memoryHTML = '<tr class="danger"><td>Invalid memory location: ' + sprintf("0x%x", memAddress) + '. Memory addresses must be from 0x00000000 - 0x7fffffff</td><td></td><td></td><td></td></tr>';
+            // }
+            // else {
+            //     var start = Math.max(addr - 40, 0x00000000);
+            //     var end = Math.min(addr + 40, 0x80000000);
+            //     for (var i = start; i < end; i += 4) {
+            //         var lsb = memory.getMem(i);
+            //         var byte2 = memory.getMem(i+1) << 8;
+            //         var byte3 = memory.getMem(i+2) << 16;
+            //         var msb = memory.getMem(i+3) << 24;
+            //         var memValue = msb | byte3 | byte2 | lsb;
+            //         memoryHTML += (memValue == 0) ? '<tr>' : '<tr class="info">';
+            //         memoryHTML += sprintf("<td>0x%08x</td><td>%d</td><td>0x%08x</td><td>0b%032s</td>",
+            //             i, memValue, memValue >>> 0, (memValue >>> 0).toString(2));
+            //         memoryHTML += '</tr>';
+            //     }
+            // }
+            // if (memoryHTML != document.getElementById('memory').innerHTML) {
+            //     document.getElementById('memory').innerHTML = memoryHTML;
+            // }
         }
 
         function displayErrors() {
