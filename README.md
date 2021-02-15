@@ -3,6 +3,8 @@ MIPS Interpreter
 
 A MIPS32 Assembly Interpreter written in Javascript for the browser. It allows for inspection of registers and memory, step by step code execution, and fast debugging using breakpoints and register initial values.
 
+This version with an added display to allow bit-mapped viewing of memory. Display currently starts at 0 only - display start location and dimensions can be changed in the code.
+
 The interpreter follows the MIPS specifications of a delay slot and register syntactic sugar.
 
 ## Supported Instructions
